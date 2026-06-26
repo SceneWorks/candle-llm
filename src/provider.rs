@@ -171,7 +171,8 @@ fn collect_images(messages: &[Message]) -> Vec<&ImageRef> {
         .flat_map(|m| {
             m.content.iter().filter_map(|c| match c {
                 Content::Image(img) => Some(img),
-                Content::Text(_) => None,
+                // Video carries no still-image input for the text-only candle-llama path.
+                Content::Text(_) | Content::Video(_) => None,
             })
         })
         .collect()
@@ -192,6 +193,8 @@ fn substitute_image_placeholders(messages: &[Message]) -> Vec<Message> {
                 .map(|c| match c {
                     Content::Image(_) => Content::text(PLACEHOLDER),
                     Content::Text(t) => Content::Text(t.clone()),
+                    // No video placeholder on the text-only path; pass the content through unchanged.
+                    Content::Video(v) => Content::Video(v.clone()),
                 })
                 .collect(),
             thinking: m.thinking.clone(),
@@ -891,6 +894,8 @@ pub fn provider_descriptor() -> TextLlmDescriptor {
             supports_system_prompt: true,
             // Text-only today; the VLM path flips this on for a vision provider.
             supports_vision: false,
+            // Text-only candle-llama never accepts video content.
+            supports_video: false,
             // No controllable reasoning mode yet (a separate story); the contract requires an
             // explicit enable-thinking request to be rejected, which validate_request enforces.
             supports_thinking: false,
@@ -1003,6 +1008,8 @@ inventory::submit! {
         descriptor: provider_descriptor,
         load: load_registered,
         can_load,
+        // Text-only provider: no weightless vision probe.
+        weightless_vision: None,
     }
 }
 

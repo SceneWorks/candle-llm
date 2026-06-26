@@ -612,6 +612,8 @@ pub fn descriptor() -> TextLlmDescriptor {
             max_new_tokens: 0,
             supports_system_prompt: true,
             supports_vision: true,
+            // Image/caption vision path only; no video input.
+            supports_video: false,
             supports_thinking: false,
             // Vision/caption path only; no tool calling (mirrors the mlx JoyCaption provider).
             supports_tools: false,
@@ -664,6 +666,8 @@ inventory::submit! {
         descriptor,
         load: load_registered,
         can_load,
+        // Image-caption provider; no weightless video probe.
+        weightless_vision: None,
     }
 }
 
