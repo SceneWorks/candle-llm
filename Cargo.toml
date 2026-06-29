@@ -26,9 +26,11 @@ candle-flash-attn = { git = "https://github.com/huggingface/candle", rev = "65ec
 # two. candle-llm is the second backend, whose passing the conformance suite de-provisionalizes it.
 # Pinned to an explicit rev (NOT `branch = "main"`): a floating branch lets any `cargo update` re-
 # resolve core-llm to main HEAD and re-break the build org-wide (sc-8021). This rev carries the
-# Qwen3-VL contract additions (`Content::Video`, `supports_video`, `weightless_vision`; sc-8077/8081)
-# that candle-llm is compile-compatible with (sc-8177). Re-pin in lockstep with the other consumers.
-core-llm = { git = "https://github.com/SceneWorks/core-llm", rev = "3870ed1" }
+# sc-8533 KV-cache-quant contract additions: the OPTIONAL `LoadSpec::kv_cache_quant` field and the
+# REQUIRED `TextLlmCapabilities::supports_kv_cache_quant` capability flag. candle-llm stays
+# compile-compatible (caps = false; it never honors a KV-quant request). Re-pin in lockstep with the
+# other consumers (mlx-llm #62 + ChatWorks #28 already pin 6e07ae4).
+core-llm = { git = "https://github.com/SceneWorks/core-llm", rev = "6e07ae4" }
 # Link-time provider registration into core-llm's registry. Must be the same major as core-llm's
 # inventory so the distributed slice links.
 inventory = "0.3"
@@ -40,7 +42,7 @@ serde_json = "1"
 [dev-dependencies]
 # The contract conformance suite (story 7201): run the registered LlamaProvider through the
 # backend-neutral checks. Same git source AND rev as the core-llm dep so cargo unifies on one core-llm.
-core-llm-testkit = { git = "https://github.com/SceneWorks/core-llm", rev = "3870ed1" }
+core-llm-testkit = { git = "https://github.com/SceneWorks/core-llm", rev = "6e07ae4" }
 
 [features]
 # Default works with NO extra features: candle-core defaults to the CPU backend (builds anywhere).
